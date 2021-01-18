@@ -13,8 +13,8 @@ const generateRandomString = () => {
 
 
 const urlDatabase = {
-    "b2xVn2": "http://www.lighthouselabs.ca",
-    "Fsm5xK": "http://www.google.com",
+    "b2xVn2": "www.lighthouselabs.ca",
+    "Fsm5xK": "www.google.com",
 };
 
 app.get("/", (req, res) => {
@@ -44,19 +44,36 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL]
- // console.log(req.params)
+  let longURL = urlDatabase[req.params.shortURL]
+
+  longURL = "http://" + longURL
   
-  res.redirect(`http://${longURL}`);
+  res.redirect(longURL);
+});
+
+//edit method
+app.post("/urls/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  const longURL = req.body.longURL;
+
+  urlDatabase[shortURL] = longURL;
+  const templateVars = { shortURL, longURL };
+
+  res.redirect("/urls/");
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL];
+
+  const templateVars = { shortURL, longURL};
+
   res.render("urls_show", templateVars);
 });
 
 app.get("/urls", (req, res) => {
   const templateVars = {urls: urlDatabase};
+
   res.render("urls_index", templateVars);
 });
 
