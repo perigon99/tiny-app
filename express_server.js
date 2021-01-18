@@ -29,26 +29,30 @@ app.post("/urls", (req, res) => {
   let newIndex = generateRandomString();
   urlDatabase[newIndex] = req.body.longURL
 
-  console.log(req.body);  // Log the POST request body to the console
-  res.redirect("/urls")       // Respond with 'Ok' (we will replace this)
+  //console.log(req.body);  // Log the POST request body to the console
+  res.redirect(`/urls/${newIndex}`)       // Respond with 'Ok' (we will replace this)
 });
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-app.get("/urls", (req, res) => {
-  const templateVars = {urls: urlDatabase};
-  res.render("urls_index", templateVars);
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL]
+ // console.log(req.params)
+  
+  res.redirect(`http://${longURL}`);
 });
-
 
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
 });
 
-
+app.get("/urls", (req, res) => {
+  const templateVars = {urls: urlDatabase};
+  res.render("urls_index", templateVars);
+});
 
 app.get("/hello", (req, res) => {
   const templateVars = { greeting: "Hello World"}
