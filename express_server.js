@@ -22,12 +22,13 @@ app.get("/", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  console.log(req.body.username)
   const name = req.body.username
   res.cookie("username", name)
-  
-  
-  //console.log(templateVars)
+  res.redirect("/urls")
+})
+
+app.post("/logout", (req, res) => {
+  res.cookie("username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;");
   res.redirect("/urls")
 })
 
