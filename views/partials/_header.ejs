@@ -17,7 +17,7 @@
       
        
        
-        <% if(!username) { %>
+        <% if(username === undefined) { %>
           <form class="form-inline my-2 my-lg-0" action="/login" method="POST">
             <input class="form-control mr-sm-2" type="text" name="username">
             <button id="btn-1" class="btn btn-secondary">Login</button>
