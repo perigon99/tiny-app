@@ -10,10 +10,22 @@ app.set("view engine", "ejs");
 const generateRandomString = () => {
  return Math.random().toString(36).substring(7)
 }
-
+//---------------------------Fake data--------------------------------------------
 const urlDatabase = {
     "b2xVn2": "www.lighthouselabs.ca",
     "Fsm5xK": "www.google.com",
+};
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
 };
 //----------------------------Router section---------------------------------------
 
@@ -22,14 +34,18 @@ app.get("/", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = {username: req.cookies.username}
+  templateVars = {username: req.cookies.username}
   res.render("urls_register", templateVars)
 });
 
 app.post("/register", (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
-  console.log(email, password)
+  const index = generateRandomString();
+  users[index] = {
+    email: req.body.email,
+    password: req.body.password
+  }
+  res.cookie("username", users[index].email)
+    console.log(users)
   res.redirect("urls")
 });
 
