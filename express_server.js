@@ -40,12 +40,20 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res) => {
   const index = generateRandomString();
+  
+  for (let record in users) {
+    console.log(users[record].email)
+    if(req.body.email === users[record].email) {
+      res.send("email already exist");
+      
+    }
+  }
   users[index] = {
     email: req.body.email,
     password: req.body.password
   }
   res.cookie("username", users[index].email)
-    console.log(users)
+    
   res.redirect("urls")
 });
 
@@ -78,7 +86,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  res.render("urls_new", users);
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -103,13 +111,13 @@ app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
   
-  const templateVars = { shortURL, longURL};
+  const templateVars = { shortURL, longURL, username: req.cookies.username, users};
 
   res.render("urls_show", templateVars);
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = {urls: urlDatabase, username: req.cookies.username};
+  const templateVars = {urls: urlDatabase, username: req.cookies.username, users};
 
   res.render("urls_index", templateVars);
 });
