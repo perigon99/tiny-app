@@ -17,14 +17,14 @@
       
        
        
-        <% if(username === undefined) { %>
-          <form class="form-inline my-2 my-lg-0" action="/login" method="POST">
-            <input class="form-control mr-sm-2" type="text" name="username">
-            <button id="btn-1" class="btn btn-secondary">Login</button>
-          </form>
+        <% if(user_id === undefined) { %>
+          
+           <a href="/register"><button id="btn-1" class="btn btn-primary">Register</button></a> 
+           <a href="/login"><button id="btn-1" class="btn btn-secondary">Login</button></a> 
+          
         <% } else { %>
           <form class="form-inline my-2 my-lg-0" action="/logout" method="POST">
-           <label for="btn-1">Hi : <%= username %> </label> 
+           <label for="btn-1">Hi : <%= email %> </label> 
            <button id="btn-1" class="btn btn-danger">Log out</button>
           </form>
         <% } %>

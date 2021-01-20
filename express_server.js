@@ -1,15 +1,17 @@
+//-----------------Import section -------------------------------------------------
 const express = require("express");
 const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({extended: true}));
 const cookieParser = require('cookie-parser');
+
+//---------------Active librairy section -----------------------------------------
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser())
 app.set("view engine", "ejs");
+app.use(express.static("public"));
 
-const generateRandomString = () => {
- return Math.random().toString(36).substring(7)
-}
+
 //---------------------------Fake data--------------------------------------------
 const urlDatabase = {
     "b2xVn2": "www.lighthouselabs.ca",
@@ -27,46 +29,91 @@ const users = {
     password: "dishwasher-funk"
   }
 };
-//----------------------------Router section---------------------------------------
+
+//----------------------------Helper functions-------------------------------------
+
+const emailChecker = (sourceEmail, bdEmail) => {
+  for (let record in bdEmail) {
+    if(sourceEmail === bdEmail[record].email) {
+      return true    
+    }
+  }
+};
+
+const generateRandomString = () => {
+  const prefix = "id"
+  return prefix + Math.random().toString(36).substring(7)
+};
+
+
+//---------------------------Route for home -------------------------------------------
 
 app.get("/", (req, res) => {
   res.send("Hello !");
 });
 
+
+//-------------------------Router authentification mecanism-----------------------------
+
 app.get("/register", (req, res) => {
-  templateVars = {username: req.cookies.username}
+  templateVars = {user_id: req.cookies.user_id, users}
   res.render("urls_register", templateVars)
 });
 
 app.post("/register", (req, res) => {
   const index = generateRandomString();
-  
-  for (let record in users) {
-    console.log(users[record].email)
-    if(req.body.email === users[record].email) {
-      res.send("email already exist");
-      
-    }
+  if(req.body.email === "" || req.body.password === "") {
+    res.status(400).send("One of the required fields is empty !!!");
+   
+    return;
   }
+  if (emailChecker(req.body.email, users)) {
+    res.status(400).send("email already registered !!!")
+    return;
+  }
+ 
   users[index] = {
     email: req.body.email,
     password: req.body.password
   }
-  res.cookie("username", users[index].email)
+  res.cookie("user_id", index)
     
   res.redirect("urls")
 });
 
+
+
 app.post("/login", (req, res) => {
-  const name = req.body.username
-  res.cookie("username", name)
-  res.redirect("/urls")
+
+  const incomingEmail = req.body.email;
+  const incomingPassword = req.body.password;
+
+  if(emailChecker(incomingEmail, users)) {
+    for(let user in users ) {
+      if(incomingPassword === users[user].password && incomingEmail === users[user].email) {
+       
+        res.cookie("user_id", user)
+        res.redirect("/urls")  
+      }
+    } 
+  } else {
+    res.status(403).send("Wrong credentials")
+    return;
+  }
+  
+})
+
+app.get("/login", (req, res) => {
+  const templateVars = {user_id:undefined, users};
+  res.render("urls_login", templateVars)
 })
 
 app.post("/logout", (req, res) => {
   res.cookie("username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;");
+  res.cookie("user_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;");
   res.redirect("/urls")
 })
+//---------------------------Basic routing --------------------------------------------------
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -86,7 +133,11 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new", users);
+  if(req.cookies.user_id === undefined) {
+    res.redirect("/login")
+  }
+  const templateVars = {urls: urlDatabase, user_id: req.cookies.user_id, email: users[req.cookies.user_id].email};
+  res.render("urls_new", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -100,9 +151,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = req.body.longURL;
-
   urlDatabase[shortURL] = longURL;
-  const templateVars = { shortURL, longURL, username: req.cookies.username };
 
   res.redirect("/urls/");
 });
@@ -110,20 +159,27 @@ app.post("/urls/:shortURL", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
+  if(req.cookies.user_id === undefined) {
+    res.redirect("/login")
+  }
   
-  const templateVars = { shortURL, longURL, username: req.cookies.username, users};
+  const templateVars = { shortURL, longURL, user_id: req.cookies.user_id, email: users[req.cookies.user_id].email};
 
   res.render("urls_show", templateVars);
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = {urls: urlDatabase, username: req.cookies.username, users};
-
+  if(req.cookies.user_id === undefined) {
+    res.redirect("/login")
+  }
+  const cookie = {}
+  const templateVars = {urls: urlDatabase, user_id: req.cookies.user_id, email: users[req.cookies.user_id].email};
+  
   res.render("urls_index", templateVars);
 });
 
 app.get("/hello", (req, res) => {
-  const templateVars = { greeting: "Hello World"};
+  const templateVars = { greeting: "Hello World", user_id: req.cookies.user_id, email: users[req.cookies.user_id].email};
 
   res.render("hello_world", templateVars);
 })
