@@ -81,7 +81,7 @@ app.post("/register", (req, res) => {
     email: req.body.email,
     password: hashPass
   }
-  console.log(users)
+
   
   req.session.user_id = index;
   //res.cookie("user_id", index)
@@ -95,7 +95,7 @@ app.post("/login", (req, res) => {
 
   const incomingEmail = req.body.email;
   const incomingPassword = req.body.password;
-  console.log("testing get user by email result",getUserByEmail(incomingEmail, users))
+  
   if(getUserByEmail(incomingEmail, users)) {
     const user = getUserByEmail(incomingEmail, users);
       if(bcrypt.compareSync(incomingPassword, users[user].password)) {
@@ -144,7 +144,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     if(req.session.user_id === urlDatabase[req.params.shortURL].userID) {
         delete urlDatabase[req.params.shortURL];
         res.redirect(`/urls/`); 
-        console.log(urlDatabase)
         return; 
     }
   }
@@ -153,7 +152,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 
 app.get("/urls/new", (req, res) => {
-  if(req.session.user_id === undefined) {
+  if(!req.session["user_id"]) { ///trying to filter out if cookies are invalid
     res.redirect("/login")
   }
   const templateVars = {urls: urlDatabase, user_id: req.session.user_id, email: users[req.session.user_id].email};
@@ -170,11 +169,14 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:shortURL", (req, res) => {
+  if(!req.session["user_id"]) { ///trying to filter out if cookies are invalid
+    res.redirect("/login")
+  }
   const shortURL = req.params.shortURL;
   const longURL = req.body.longURL;
 
   urlDatabase[shortURL].longURL = longURL;
-  console.log("checking post method", shortURL, longURL)
+
   res.redirect("/urls/");
 });
 //-------------------I am working here ------------------------------------------------------------------------
@@ -182,7 +184,6 @@ app.post("/urls/:shortURL", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL].longURL;
-  console.log(typeof req.params.shortURL)
   if(req.session.user_id === undefined) {
     res.redirect("/login")
   }
@@ -194,6 +195,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/urls", (req, res) => {
   if(!req.session["user_id"]) { ///trying to filter out if cookies are invalid
     res.redirect("/login")
+    return;
   }
   const longURL = {longURL: urlDatabase.longURL}
   const result =  {}
@@ -203,8 +205,9 @@ app.get("/urls", (req, res) => {
       result[shortUrl] = tempUrl;
     }
   }
-  console.log(result, urlDatabase)
-  const templateVars = {urls: result, user_id: req.session.user_id, email: users[req.session.user_id].email};
+  const uid = req.session.user_id
+  const userEmail = users[uid].email
+  const templateVars = {urls: result, user_id: req.session.user_id, email: userEmail};
   
   res.render("urls_index", templateVars);
 });

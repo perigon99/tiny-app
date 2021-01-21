@@ -5,7 +5,7 @@ const getUserByEmail = function(email, database) {
       return user;
     }
   }
-  return false;
+  return undefined;
 };
 
 const emailChecker = (sourceEmail, bdEmail) => {
