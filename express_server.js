@@ -3,7 +3,7 @@ const express = require("express");
 
 const PORT = 8080;
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
+//const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session')
 
@@ -45,19 +45,9 @@ const users = {
 
 //----------------------------Helper functions-------------------------------------
 
-const emailChecker = (sourceEmail, bdEmail) => {
-  for (let record in bdEmail) {
-    if(sourceEmail === bdEmail[record].email) {
-      return true    
-    }
-  }
-};
 
-const generateRandomString = () => {
-  const prefix = "id"
-  return prefix + Math.random().toString(36).substring(7)
-};
 
+const {getUserByEmail, generateRandomString, emailChecker} = require("./helper");
 
 //---------------------------Route for home -------------------------------------------
 
@@ -91,9 +81,9 @@ app.post("/register", (req, res) => {
     email: req.body.email,
     password: hashPass
   }
-  console.log(users[index])
-  console.log(index)
-  res.session.user_id = index;
+  console.log(users)
+  
+  req.session.user_id = index;
   //res.cookie("user_id", index)
     
   res.redirect("urls")
@@ -105,15 +95,15 @@ app.post("/login", (req, res) => {
 
   const incomingEmail = req.body.email;
   const incomingPassword = req.body.password;
-  
-  if(emailChecker(incomingEmail, users)) {
-    for(let user in users ) {
-      if(bcrypt.compareSync(incomingPassword, users[user].password) && incomingEmail === users[user].email) {
-        res.session.user_id = user;
+  console.log("testing get user by email result",getUserByEmail(incomingEmail, users))
+  if(getUserByEmail(incomingEmail, users)) {
+    const user = getUserByEmail(incomingEmail, users);
+      if(bcrypt.compareSync(incomingPassword, users[user].password)) {
+        req.session.user_id = user;
        // res.cookie("user_id", user)
         res.redirect("/urls")  
       }
-    } 
+ 
   } else {
     res.status(403).send("Wrong credentials")
     return;
@@ -128,7 +118,7 @@ app.get("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
  // res.clearCookie("username");
-  res.session.user_id = null
+  req.session["user_id"] = "";
   res.redirect("/urls")
 })
 //---------------------------Basic routing --------------------------------------------------
@@ -138,6 +128,7 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  
   let newIndex = generateRandomString();
   const newShortUrl = {
      longURL:req.body.longURL,
@@ -199,8 +190,9 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+
 app.get("/urls", (req, res) => {
-  if(req.session.user_id === undefined) {
+  if(!req.session["user_id"]) { ///trying to filter out if cookies are invalid
     res.redirect("/login")
   }
   const longURL = {longURL: urlDatabase.longURL}
