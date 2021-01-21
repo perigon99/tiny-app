@@ -1,5 +1,6 @@
 <%- include('partials/_head') %>
 <%- include('partials/_header') %>
+
 <body>
   <main style="margin: 1em;">
     <h3>My URLs</h3>
@@ -13,7 +14,6 @@
         </tr>
       </thead>
       <tbody>
-
         <% for(let url in urls) { %>
           <form method="POST" id="form1" action="/urls/<%=url %>/delete">
           <tr>    
@@ -31,4 +31,5 @@
       </tbody>
     </table>
   </main>
-  <%- include('partials/_footer') %>
+
+<%- include('partials/_footer') %>

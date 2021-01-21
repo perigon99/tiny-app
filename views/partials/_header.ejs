@@ -11,26 +11,16 @@
       </div>
     </div>
     <div>
-      
-    </div>
-    <div>
-      
-       
-       
-        <% if(user_id === undefined) { %>
-          
+        <% if(user_id === undefined) { %> 
            <a href="/register"><button id="btn-1" class="btn btn-primary">Register</button></a> 
-           <a href="/login"><button id="btn-1" class="btn btn-secondary">Login</button></a> 
-          
+           <a href="/login"><button id="btn-1" class="btn btn-secondary">Login</button></a>    
         <% } else { %>
           <form class="form-inline my-2 my-lg-0" action="/logout" method="POST">
            <label for="btn-1">Hi : <%= email %> </label> 
            <button id="btn-1" class="btn btn-danger">Log out</button>
           </form>
         <% } %>
-        
-        
-      
+
     </div>
   </nav>
 </header>
