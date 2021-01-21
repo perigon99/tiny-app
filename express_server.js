@@ -15,8 +15,8 @@ app.use(express.static("public"));
 //---------------------------Fake data--------------------------------------------
 const urlDatabase = {
      b2xVn2: {longURL: "www.lighthouselabs.ca", userID: "aJ48lW"},
-     b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
-     i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
+     b6UTxQ: { longURL: "www.tsn.ca", userID: "aJ48lW" },
+     i3BoGr: { longURL: "www.google.ca", userID: "aJ48lW" }
     
 };
 const users = { 
@@ -133,7 +133,16 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
+  if(req.cookies.user_id !== undefined) {
+    if(req.cookies.user_id === urlDatabase[req.params.shortURL].userID) {
+        delete urlDatabase[req.params.shortURL];
+        res.redirect(`/urls/`); 
+        console.log(urlDatabase)
+        return; 
+  }
+ 
+  }
+  console.log(urlDatabase)
   
   res.redirect(`/urls/`);  
 });
