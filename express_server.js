@@ -4,6 +4,7 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 //---------------Active librairy section -----------------------------------------
 app.use(bodyParser.urlencoded({extended: true}));
@@ -73,11 +74,13 @@ app.post("/register", (req, res) => {
     res.status(400).send("email already registered !!!")
     return;
   }
- 
+  const password = req.body.password;
+  const hashPass= bcrypt.hashSync(password, 10)
   users[index] = {
     email: req.body.email,
-    password: req.body.password
+    password: hashPass
   }
+  console.log(users[index])
   res.cookie("user_id", index)
     
   res.redirect("urls")
@@ -89,10 +92,10 @@ app.post("/login", (req, res) => {
 
   const incomingEmail = req.body.email;
   const incomingPassword = req.body.password;
-
+  
   if(emailChecker(incomingEmail, users)) {
     for(let user in users ) {
-      if(incomingPassword === users[user].password && incomingEmail === users[user].email) {
+      if(bcrypt.compareSync(incomingPassword, users[user].password) && incomingEmail === users[user].email) {
        
         res.cookie("user_id", user)
         res.redirect("/urls")  
@@ -139,11 +142,8 @@ app.post("/urls/:shortURL/delete", (req, res) => {
         res.redirect(`/urls/`); 
         console.log(urlDatabase)
         return; 
+    }
   }
- 
-  }
-  console.log(urlDatabase)
-  
   res.redirect(`/urls/`);  
 });
 
