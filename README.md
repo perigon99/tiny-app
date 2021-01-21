@@ -4,7 +4,10 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
+### After the client is registered, he only need to insert the link here to add it to his collection of links by clicking on the Create New URL link on the NavBar
 !["screenshot description"](/public/images/tinyApp.png)
+
+### Anytime the client can check, edit or delete all the links in his account
 !["screenshot description"](/public/images/TinyApp_listofURLS.png)
 
 ## Dependencies
